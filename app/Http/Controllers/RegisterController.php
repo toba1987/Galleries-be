@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Gallery;
 use Illuminate\Http\Request;
-
-class GalleryController extends Controller
+use App\User;
+class RegisterController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,7 +13,7 @@ class GalleryController extends Controller
      */
     public function index()
     {
-        return Gallery::with(["user", "images"])->latest()->paginate(10);
+        //
     }
 
     /**
@@ -35,27 +34,45 @@ class GalleryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->validate(request(),[
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:2|confirmed',
+            'accept' => 'required|accepted',
+        ]);
+
+        $user = new User;
+
+        $user->first_name = request('first_name');
+        $user->last_name = request('last_name');
+        $user->email = request('email');
+        $user->password = bcrypt(request('password'));
+
+        $user->save();
+
+        return $user;
+
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Gallery  $gallery
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
-        return Gallery::with(['user','images'])->findOrFail($id);
+        //
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Gallery  $gallery
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(Gallery $gallery)
+    public function edit($id)
     {
         //
     }
@@ -64,10 +81,10 @@ class GalleryController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Gallery  $gallery
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Gallery $gallery)
+    public function update(Request $request, $id)
     {
         //
     }
@@ -75,18 +92,11 @@ class GalleryController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Gallery  $gallery
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Gallery $gallery)
+    public function destroy($id)
     {
         //
-    }
-
-    public function search($term) {
-
-        // return self::where('name', 'like', "%$value%")->get();
-        return Gallery::with(['user','images'])->where('name', 'LIKE', "%$term%")->get();
-        // $users = DB::table('users')->skip(10)->take(5)->get();
     }
 }

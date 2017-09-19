@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
@@ -18,7 +19,6 @@ class LoginController extends Controller
     |
     */
 
-    use AuthenticatesUsers;
 
     /**
      * Where to redirect users after login.
@@ -34,6 +34,25 @@ class LoginController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest')->except('logout');
+        $this->middleware('jwt.auth')->only('logout');
+    }
+
+    public function authenticate(Request $request)
+    {
+        $credentials = $request->only(['email', 'password']);
+
+        try{
+            if(!$token = \JWTAuth::attempt($credentials))
+            {
+               //   \Log::info($token);
+                return response()->json(['error' => 'invalid_credentials'], 401);
+            }
+        }catch(Exception $e) {
+            return response()->json(['error' => 'could_not_create_token'], 500);
+        }
+
+        $user = \Auth::user();
+
+        return response()->json(['token' => $token, 'user' => $user]);
     }
 }
